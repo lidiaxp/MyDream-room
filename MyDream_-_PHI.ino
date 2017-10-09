@@ -73,10 +73,9 @@ void putRequest(String quem, String estado){
 
   client.print(String("PUT ") + quem + " HTTP/1.1\r\n" +
                  "Host: " + host + "\r\n" +
-                 //"Connection: close\r\n" +
                  "Content-Type: application/json\r\n" +
                  "Content-Length: " + data.length() + "\r\n" +
-                 "\r\n" + // This is the extra CR+LF pair to signify the start of a body
+                 "\r\n" + 
                  data + "\n");
 }
 
