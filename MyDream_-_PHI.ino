@@ -1,15 +1,25 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
+#include <WiFiUdp.h>
 
 const char* ssid = "meuwifi";
 const char* password = "minhasenha";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
-bool e_cel, e_tranca, e_vent, e_lamp1, e_lamp2, e_cortina, e_janela;
+bool e_cel, e_tranca, e_vent, e_lamp1, e_lamp2, e_cortina, e_janela, e_alarme;
 String senha = "1234";
 bool online = false;
+int hora, minuto;
+
+unsigned int localPort = 2390; 
+
+IPAddress timeServerIP; 
+const char* ntpServerName = "time.nist.gov";
+const int NTP_PACKET_SIZE = 48;
+byte packetBuffer[ NTP_PACKET_SIZE];
 
 WiFiServer server(5000);
 WiFiClientSecure client;
+WiFiUDP udp;
 
 void conectar(){
   Serial.begin(115200);
@@ -26,6 +36,8 @@ void conectar(){
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
+  udp.begin(localPort);
+
   Serial.print("connecting to ");
   Serial.println(host);
   server.begin();
@@ -33,6 +45,22 @@ void conectar(){
     Serial.println("connection failed");
     return;
   }
+}
+
+unsigned long sendNTPpacket(IPAddress& address){
+  memset(packetBuffer, 0, NTP_PACKET_SIZE);
+  packetBuffer[0] = 0b11100011; 
+  packetBuffer[1] = 0;   
+  packetBuffer[2] = 6;     
+  packetBuffer[3] = 0xEC;  
+  packetBuffer[12]  = 49;
+  packetBuffer[13]  = 0x4E;
+  packetBuffer[14]  = 49;
+  packetBuffer[15]  = 52;
+
+  udp.beginPacket(address, 123); 
+  udp.write(packetBuffer, NTP_PACKET_SIZE);
+  udp.endPacket();
 }
 
 String getRequest(String quem){
@@ -103,6 +131,7 @@ void atualizarEstados(){
   e_lamp2 = estados(getRequest("/sensor/e_lamp2"));
   e_cortina = estados(getRequest("/sensor/e_cortina"));
   e_janela = estados(getRequest("/sensor/e_janela"));
+  e_alarme = estados(getRequest("/sensor/alarme"));
   senha = getRequest("/sensor/senha");    
 }
 
@@ -114,6 +143,32 @@ void atualizarApi(){
   putRequest("/sensor/e_lamp2", voltaEstados(e_lamp2));
   putRequest("/sensor/e_cortina", voltaEstados(e_cortina));
   putRequest("/sensor/e_janela", voltaEstados(e_janela));
+  putRequest("/sensor/alarme", voltaEstados(e_alarme));
+}
+
+void relogio(){
+  WiFi.hostByName(ntpServerName, timeServerIP); 
+  sendNTPpacket(timeServerIP);
+  delay(1000);
+  int cb = udp.parsePacket();
+  if (!cb) {
+    //sem pacote de dados
+  }else {
+    //com pacote
+    udp.read(packetBuffer, NTP_PACKET_SIZE); 
+    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
+    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
+    unsigned long secsSince1900 = highWord << 16 | lowWord;
+    const unsigned long seventyYears = 2208988800UL;
+    unsigned long epoch = secsSince1900 - seventyYears; 
+    hora = ((epoch  % 86400L) / 3600) - 3; 
+    minuto = (epoch  % 3600) / 60;    
+    Serial.print("hora: ");
+    Serial.println(hora);
+    Serial.print("minuto: ");
+    Serial.println(minuto);
+  }
+  //delay(60000);
 }
 
 void setup (){
@@ -121,6 +176,8 @@ void setup (){
 }
  
 void loop() { 
+  relogio();
+  
   if(getRequest("/sensor/celular") == "desligado"){
     atualizarApi();
   } else{
