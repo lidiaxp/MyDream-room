@@ -14,7 +14,7 @@ int count;
 String senha = "1234";
 String passe;
 bool online = false;
-int hora, minuto;
+int hora, minuto, horaAcordar, minutoAcordar;
 
 unsigned int localPort = 2390; 
 
@@ -153,7 +153,9 @@ void atualizarEstados(){
   e_cortina = estados(getRequest("/sensor/e_cortina"));
   e_janela = estados(getRequest("/sensor/e_janela"));
   e_alarme = estados(getRequest("/sensor/alarme"));
-  senha = getRequest("/sensor/senha");    
+  senha = getRequest("/sensor/senha");  
+  horaAcordar = atoi(getRequest("/sensor/hora"));
+  minutoAcordar = atoi(getRequest("/sensor/minuto"));
 }
 
 void atualizarApi(){
