@@ -1,12 +1,17 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <WiFiUdp.h>
+#include <Wire.h>
+#include <Keypad_I2C.h>
+#include <Keypad.h>
+#define I2CADDR 0x38
 
 const char* ssid = "meuwifi";
 const char* password = "minhasenha";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
 bool e_cel, e_tranca, e_vent, e_lamp1, e_lamp2, e_cortina, e_janela, e_alarme;
-String senha = "1234";
+int count;
+int senha[4];
 bool online = false;
 int hora, minuto;
 
@@ -20,6 +25,21 @@ byte packetBuffer[ NTP_PACKET_SIZE];
 WiFiServer server(5000);
 WiFiClientSecure client;
 WiFiUDP udp;
+
+const byte ROWS = 4; //four rows
+const byte COLS = 4; //three columns
+char keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rowPins[ROWS] = {0, 1, 2, 3}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {4, 5, 6}; //connect to the column pinouts of the keypad
+
+Keypad_I2C kpd( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR, PCF8574 );
+
 
 void conectar(){
   Serial.begin(115200);
@@ -171,18 +191,59 @@ void relogio(){
   //delay(60000);
 }
 
+void putSenha(int n){
+  if(count == 0){
+     senha[count] = n;
+  }
+  if(count == 1){
+     senha[count] = n;
+  }
+  if(count == 2){
+     senha[count] = n;
+  }
+  if(count == 3){
+     senha[count] = n;
+  }
+  delay(500); 
+  count++;
+}
+
+void inserirDigito(){
+  char tecla_pressionada = kpd.getKey();
+   if (tecla_pressionada){
+       putSenha(tecla_pressionada);
+  }
+}
+
+void checarSenha(){
+  if(count == 4){ //definir sua senha aki
+    if(senha[0] == 1 && senha[1] == 2 && senha[2] == 3 && senha[3] == 4){
+      //acende led verde e abre a porta
+    }else{
+      //acende led vermelho e fecha a porta
+    }
+    count = 0;
+  }
+}
+
 void setup (){
   conectar();
+  Wire.begin( );
+	kpd.begin( makeKeymap(keys) );
 }
  
 void loop() { 
   relogio();
-  
+  //checa a luminaria
+  inserirDigito();
+  checarSenha();
   if(getRequest("/sensor/celular") == "desligado"){
     atualizarApi();
+    //continua o codigo daki
   } else{
     atualizarEstados();    
   }
+  //a parte do ambiente é daki
   
   if(!online){
     //interaçoes aki
