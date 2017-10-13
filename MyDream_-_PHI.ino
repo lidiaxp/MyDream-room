@@ -11,7 +11,8 @@ const char* password = "minhasenha";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
 bool e_cel, e_tranca, e_vent, e_lamp1, e_lamp2, e_cortina, e_janela, e_alarme;
 int count;
-int senha[4];
+String senha = "1234";
+String passe;
 bool online = false;
 int hora, minuto;
 
@@ -192,17 +193,8 @@ void relogio(){
 }
 
 void putSenha(int n){
-  if(count == 0){
-     senha[count] = n;
-  }
-  if(count == 1){
-     senha[count] = n;
-  }
-  if(count == 2){
-     senha[count] = n;
-  }
-  if(count == 3){
-     senha[count] = n;
+  if(count < 4){
+     passe += n;
   }
   delay(500); 
   count++;
@@ -217,19 +209,20 @@ void inserirDigito(){
 
 void checarSenha(){
   if(count == 4){ //definir sua senha aki
-    if(senha[0] == 1 && senha[1] == 2 && senha[2] == 3 && senha[3] == 4){
+    if(passe == senha){
       //acende led verde e abre a porta
     }else{
       //acende led vermelho e fecha a porta
     }
+    passe = "";
     count = 0;
   }
 }
 
 void setup (){
   conectar();
-  Wire.begin( );
-	kpd.begin( makeKeymap(keys) );
+  Wire.begin( );   
+  kpd.begin( makeKeymap(keys) );
 }
  
 void loop() { 
