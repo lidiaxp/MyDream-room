@@ -9,7 +9,7 @@
 const char* ssid = "meuwifi";
 const char* password = "minhasenha";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
-bool e_cel, e_tranca, e_vent, e_lamp1, e_lamp2, e_cortina, e_janela, e_alarme;
+bool e_cel, e_tranca, e_vent, e_lamp1, e_lamp2, e_cortina, e_janela, e_alarme, ambientea;
 int count;
 String senha = "1234";
 String passe;
@@ -156,6 +156,7 @@ void atualizarEstados(){
   senha = getRequest("/sensor/senha");  
   horaAcordar = atoi(getRequest("/sensor/hora"));
   minutoAcordar = atoi(getRequest("/sensor/minuto"));
+  ambientea = estados(getRequest("/sensor/ambientea"));
 }
 
 void atualizarApi(){
