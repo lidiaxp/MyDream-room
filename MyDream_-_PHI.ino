@@ -11,7 +11,7 @@ const char* password = "minhasenha";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
 bool e_cel, e_tranca, e_vent, e_lamp1, e_lamp2, e_cortina, e_janela, e_alarme, ambientea;
 int count;
-String senha = "1234";
+String senha;
 String passe;
 bool online = false;
 int hora, minuto, horaAcordar, minutoAcordar;
@@ -224,6 +224,7 @@ void checarSenha(){
 
 void setup (){
   conectar();
+  senha = getRequest("/sensor/senha");
   Wire.begin( );   
   kpd.begin( makeKeymap(keys) );
 }
