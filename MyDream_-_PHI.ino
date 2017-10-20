@@ -154,8 +154,8 @@ void atualizarEstados(){
   e_janela = estados(getRequest("/sensor/e_janela"));
   e_alarme = estados(getRequest("/sensor/alarme"));
   senha = getRequest("/sensor/senha");  
-  horaAcordar = atoi(getRequest("/sensor/hora"));
-  minutoAcordar = atoi(getRequest("/sensor/minuto"));
+  horaAcordar = (getRequest("/sensor/hora")).toInt();
+  minutoAcordar = (getRequest("/sensor/minuto")).toInt();
   ambientea = estados(getRequest("/sensor/ambientea"));
 }
 
