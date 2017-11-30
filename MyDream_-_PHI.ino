@@ -51,8 +51,8 @@ bool ventilador = false;
 bool ambientea = false;
 
 //Internet
-const char* ssid = "Gian";
-const char* password = "sexoehvida";
+const char* ssid = "nomedowifi";
+const char* password = "senhadowifi";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
 int count;
 String senha;
