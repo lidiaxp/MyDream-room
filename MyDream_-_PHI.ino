@@ -373,11 +373,6 @@ void loop() {
       if(LDRF > LDRD){
         myservoC.write(0);
         cortina = true;
-          if(alarme && horaAcordar == hora &&minutoAcordar == minuto){
-            sing(1);
-            sing(1);
-            sing(2);
-          }
       }else{
         if(!pressao > thershold){
           digitalWrite(portaReleL, HIGH);
@@ -398,16 +393,6 @@ void loop() {
       luz1 = false;
       luz2 = false;
      }
-
-    if(estBSair){
-      myservoP.write(0);
-      tranca = true;
-    }
-
-    if(estBFC){
-      myservoP.write(90);
-      tranca = false;
-    }
 
     if(pressao > thershold){
       myservoC.write(90);
@@ -432,14 +417,32 @@ void loop() {
       ventilador = false;
     }
 
-    if(estBA){
+   
+  }
+  
+  if(estBSair){
+      myservoP.write(0);
+      tranca = true;
+    }
+
+    if(estBFC){
+      myservoP.write(90);
+      tranca = false;
+    }
+  
+     if(estBA){
       digitalWrite(portaReleA, HIGH);
       luz2 = true;
     }else{
       digitalWrite(portaReleA, HIGH);
       luz2 = false;
     }
-  }
+  
+    if(alarme && horaAcordar == hora &&minutoAcordar == minuto){
+      sing(1);
+      sing(1);
+      sing(2);
+    }
 }
 
 void lerSensores(){
