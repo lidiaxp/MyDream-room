@@ -281,6 +281,7 @@ void checarSenha(){
       tranca = true;
       digitalWrite(portaLedRed, LOW);
       digitalWrite(portaLedGreen, HIGH);
+      delay(1000);
     }else{
       myservoP.write(90);
       tranca = false;
@@ -365,6 +366,7 @@ void loop() {
 
     if(tranca){
       myservoP.write(0);
+      delay(1000);
     }else{
       myservoP.write(90);
     }
