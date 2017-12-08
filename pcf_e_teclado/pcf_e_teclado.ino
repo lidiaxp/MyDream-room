@@ -1,4 +1,4 @@
-#http://www.automalabs.com.br/teclado-membrana-de-16-teclas-com-interface-i2c/
+//http://www.automalabs.com.br/teclado-membrana-de-16-teclas-com-interface-i2c/
 
 #include <Wire.h>
 #include <i2ckeypad.h>
