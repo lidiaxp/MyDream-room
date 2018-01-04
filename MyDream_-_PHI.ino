@@ -51,8 +51,8 @@ bool ventilador = false;
 bool ambientea = false;
 
 //Internet
-const char* ssid = "nomedowifi";
-const char* password = "senhadowifi";
+const char* ssid = "NomeDoWifi";
+const char* password = "SenhaDoWifi";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
 int count;
 String senha;
@@ -334,6 +334,7 @@ void loop() {
   }
 
   if(ambientea){
+    //pelo celular
     if(luz1){
       digitalWrite(portaReleL, HIGH);
     }else{
@@ -371,6 +372,7 @@ void loop() {
       myservoP.write(90);
     }
   }else{
+    //pelo ambiente
     if(presenca){
       if(LDRF > LDRD){
         myservoC.write(0);
@@ -380,6 +382,29 @@ void loop() {
           digitalWrite(portaReleL, HIGH);
           luz1 = true;
         }
+      }
+
+      if(pressao > thershold){
+        myservoC.write(90);
+        cortina = false;
+        digitalWrite(portaReleL, LOW);
+        luz1 = false;
+      }
+
+      if(chuva){
+        myservoJ.write(90);
+        janela = false;
+      }else{
+        myservoJ.write(0);
+        janela = true;
+      }
+
+      if(temperatura >= 27){
+        digitalWrite(portaReleV, HIGH);
+        ventilador = true;
+      }else{
+        digitalWrite(portaReleV, LOW);
+        ventilador = false;
       }
     }else{
       myservoC.write(90);
@@ -395,56 +420,32 @@ void loop() {
       luz1 = false;
       luz2 = false;
      }
+  }
 
-    if(pressao > thershold){
-      myservoC.write(90);
-      cortina = false;
-      digitalWrite(portaReleL, LOW);
-      luz1 = false;
-    }
+  //parte do dane-se ambiente
+  if(estBSair){
+    myservoP.write(0);
+    tranca = true;
+  }
 
-    if(chuva){
-      myservoJ.write(90);
-      janela = false;
-    }else{
-      myservoJ.write(0);
-      janela = true;
-    }
-
-    if(temperatura >= 27){
-      digitalWrite(portaReleV, HIGH);
-      ventilador = true;
-    }else{
-      digitalWrite(portaReleV, LOW);
-      ventilador = false;
-    }
-
-   
+  if(estBFC){
+    myservoP.write(90);
+    tranca = false;
   }
   
-  if(estBSair){
-      myservoP.write(0);
-      tranca = true;
-    }
-
-    if(estBFC){
-      myservoP.write(90);
-      tranca = false;
-    }
+  if(estBA){
+    digitalWrite(portaReleA, HIGH);
+    luz2 = true;
+  }else{
+    digitalWrite(portaReleA, HIGH);
+    luz2 = false;
+  }
   
-     if(estBA){
-      digitalWrite(portaReleA, HIGH);
-      luz2 = true;
-    }else{
-      digitalWrite(portaReleA, HIGH);
-      luz2 = false;
-    }
-  
-    if(alarme && horaAcordar == hora &&minutoAcordar == minuto){
-      sing(1);
-      sing(1);
-      sing(2);
-    }
+  if(alarme && horaAcordar == hora && minutoAcordar == minuto){
+    sing(1);
+    sing(1);
+    sing(2);
+  }
 }
 
 void lerSensores(){
