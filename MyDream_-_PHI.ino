@@ -369,7 +369,7 @@ void loop() {
       myservoP.write(0);
       delay(1000);
     }else{
-      myservoP.write(180);
+      myservoP.write(90);
     }
   }else{
     //pelo ambiente
@@ -407,9 +407,9 @@ void loop() {
         ventilador = false;
       }
     }else{
-      myservoC.write(90);
+      myservoC.write(180);
       myservoP.write(90);
-      myservoJ.write(90);
+      myservoJ.write(180);
       digitalWrite(portaReleV, LOW);
       digitalWrite(portaReleL, LOW);
       digitalWrite(portaReleA, LOW);
