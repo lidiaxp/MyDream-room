@@ -82,7 +82,7 @@ Servo myservoJ;
 //Outros Valores
 DHT dht(portaDHT, DHTTYPE);
 
-int thershold = 200;
+int thershold = 20;
 
 //https://tallerarduino.com/2013/12/28/teclado-i2c-con-chip-pcf8574-y-arduino/
 
@@ -356,25 +356,25 @@ void loop() {
     if(cortina){
       myservoC.write(0);
     }else{
-      myservoC.write(90);
+      myservoC.write(180);
     }
 
     if(janela){
       myservoJ.write(0);
     }else{
-      myservoJ.write(90);
+      myservoJ.write(180);
     }
 
     if(tranca){
       myservoP.write(0);
       delay(1000);
     }else{
-      myservoP.write(90);
+      myservoP.write(180);
     }
   }else{
     //pelo ambiente
     if(presenca){
-      if(LDRF > LDRD){
+      if((LDRF - 100) > LDRD){
         myservoC.write(0);
         cortina = true;
       }else{
@@ -385,14 +385,14 @@ void loop() {
       }
 
       if(pressao > thershold){
-        myservoC.write(90);
+        myservoC.write(180);
         cortina = false;
         digitalWrite(portaReleL, LOW);
         luz1 = false;
       }
 
       if(chuva){
-        myservoJ.write(90);
+        myservoJ.write(180);
         janela = false;
       }else{
         myservoJ.write(0);
@@ -429,7 +429,7 @@ void loop() {
   }
 
   if(estBFC){
-    myservoP.write(90);
+    myservoP.write(180);
     tranca = false;
   }
   
