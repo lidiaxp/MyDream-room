@@ -17,8 +17,8 @@
 #define portaPIR 0 
 #define portaReleL 1
 #define portaReleA 2
-#define portaReleV 3
-#define portaBuzzer 4
+#define portaReleV 4
+#define melodyPin 3
 #define portaChuva 5
 #define portaLedRed 6
 #define portaLedGreen 7
@@ -296,8 +296,6 @@ void checarSenha(){
 void setup (){
   conectar();
   senha = getRequest("/sensor/senha");
-  
-  Serial.println(115200);
 
   dht.begin();
   //kpd.begin( makeKeymap(keys) );
