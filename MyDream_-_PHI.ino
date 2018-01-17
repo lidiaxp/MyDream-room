@@ -271,6 +271,7 @@ void inserirDigito(){
   char tecla_pressionada = kpd.getKey();
    if (tecla_pressionada != NO_KEY){
        putSenha(tecla_pressionada);
+      tone(melodyPin, 2000);
   }
 }
 
