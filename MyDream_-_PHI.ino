@@ -311,7 +311,7 @@ void setup (){
   pinMode(portaReleL, OUTPUT);
   pinMode(portaReleA, OUTPUT);
   pinMode(portaReleV, OUTPUT);
-  pinMode(portaBuzzer, OUTPUT);
+  pinMode(melodyPin, OUTPUT);
   pinMode(portaChuva, INPUT);
   pinMode(portaLedRed, OUTPUT);
   pinMode(portaLedGreen, OUTPUT);
