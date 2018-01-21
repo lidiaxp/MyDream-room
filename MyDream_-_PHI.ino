@@ -8,26 +8,29 @@
 #include <Keypad.h>
 
 //Analógico
-#define portaLDRF 0 
+/*#define portaLDRF 0 
 #define portaLDRD 1 
 #define portaDHT 2
-#define portaPiezo 3
+#define portaPiezo 3*/
 
 //Digital
-#define portaPIR 0 
-#define portaReleL 1
-#define portaReleA 2
-#define portaReleV 4
-#define melodyPin 3
-#define portaChuva 5
-#define portaLedRed 6
-#define portaLedGreen 7
-#define portaServoP 8
-#define portaServoC 9
-#define portaServoJ 10
-#define portaBotaoFC 11
-#define portaBotaoSair 12
-#define portaBotaoA 13
+//#define portaPIR D0 
+#define portaReleL D0
+#define portaReleA D12
+#define portaReleV D2
+#define melodyPin D3
+//#define portaChuva D5
+#define portaLedRed D4
+#define portaLedGreen D5
+#define portaServoP D6
+#define portaServoC D7
+#define portaServoJ D8
+#define portaBotaoFC D9
+#define portaBotaoSair D10
+#define portaBotaoA D11
+
+#define FILAS 4
+#define COLUMNAS 4
 
 //Valores
 int LDRF = 0;
@@ -51,13 +54,13 @@ bool ventilador = false;
 bool ambientea = false;
 
 //Internet
-const char* ssid = "NomeDoWifi";
-const char* password = "SenhaDoWifi";
+const char* ssid = "SuaRede";
+const char* password = "SuaSenha";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
-int count;
-String senha;
-String passe;
 bool online = false;
+//int count;
+String senha;
+//String passe;
 int hora, minuto, horaAcordar, minutoAcordar;
 
 unsigned int localPort = 2390; 
@@ -73,25 +76,15 @@ WiFiUDP udp;
 
 //Outras Definições
 #define DHTTYPE DHT22
-#define filas 4
-#define colunas 4
 Servo myservoP;
 Servo myservoC;
 Servo myservoJ;
 
 //Outros Valores
-DHT dht(portaDHT, DHTTYPE);
+
 
 int thershold = 20;
-
-//https://tallerarduino.com/2013/12/28/teclado-i2c-con-chip-pcf8574-y-arduino/
-
-char teclas[filas][colunas] = {
-{'1','2','3','A'},
-{'4','5','6','B'},
-{'7','8','9','C'},
-{'*','0','#','D'}
-};
+int pausa = 0;
 
 byte grau[8] ={ B00001100, 
                 B00010010, 
@@ -101,11 +94,20 @@ byte grau[8] ={ B00001100,
                 B00000000, 
                 B00000000, 
                 B00000000,}; 
-                
-byte PinsFilas[filas] = {0,1,2,3}; 
-byte PinsColumnas[colunas] = {4,5,6,7};
+
+/*char teclas[FILAS][COLUMNAS] = {
+{'1','2','3','A'},
+{'4','5','6','B'},
+{'7','8','9','C'},
+{'*','0','#','D'}
+};
+
+byte PinsFilas[FILAS] = {0,1,2,3}; 
+byte PinsColumnas[COLUMNAS] = {4,5,6,7};
+
 int i2caddress = 0x20;
-Keypad_I2C kpd = Keypad_I2C( makeKeymap(teclas), PinsFilas, PinsColumnas, filas, colunas, i2caddress);
+
+Keypad_I2C kpd = Keypad_I2C( makeKeymap(teclas), PinsFilas, PinsColumnas, FILAS, COLUMNAS, i2caddress );*/
 
 void conectar(){
   Serial.begin(115200);
@@ -164,13 +166,16 @@ String getRequest(String quem){
                "Connection: close\r\n\r\n");
  
   while (client.connected()) {
+    
     String line = client.readStringUntil('\n');
+    Serial.println(line);
     if (line == "\r") {
       break;
     }
   }
   String line = client.readStringUntil('\n');
   Serial.println(line);
+  Serial.println("saiu do while");
   return line.substring(1, line.length() - 1);  
 }
 
@@ -224,6 +229,7 @@ void atualizarEstados(){
 }
 
 void atualizarApi(){
+  ambientea = estados(getRequest("/sensor/celular"));
   putRequest("/sensor/celular", voltaEstados(ambientea));
   putRequest("/sensor/e_tranca", voltaEstados(tranca));
   putRequest("/sensor/e_vent", voltaEstados(ventilador));
@@ -233,6 +239,39 @@ void atualizarApi(){
   putRequest("/sensor/e_janela", voltaEstados(janela));
   putRequest("/sensor/alarme", voltaEstados(alarme));
 }
+
+/*void putSenha(int n){
+  if(count < 4){
+     passe += n;
+  }
+  delay(500); 
+  count++;
+}
+
+void inserirDigito(){
+  char tecla_pressionada = kpd.getKey();
+   if (tecla_pressionada != NO_KEY){
+       putSenha(tecla_pressionada);
+      tone(melodyPin, 2000);
+  }
+}
+
+void checarSenha(){
+  if(count == 4){ //definir sua senha aki
+    if(passe == senha){
+      myservoP.write(0);
+      digitalWrite(portaLedRed, LOW);
+      digitalWrite(portaLedGreen, HIGH);
+      delay(1000);
+    }else{
+      myservoP.write(90);
+      digitalWrite(portaLedRed, HIGH);
+      digitalWrite(portaLedGreen, LOW);
+    }
+    passe = "";
+    count = 0;
+  }
+}*/
 
 void relogio(){
   WiFi.hostByName(ntpServerName, timeServerIP); 
@@ -259,80 +298,51 @@ void relogio(){
   //delay(60000);
 }
 
-void putSenha(int n){
-  if(count < 4){
-     passe += n;
-  }
-  delay(500); 
-  count++;
-}
-
-void inserirDigito(){
-  char tecla_pressionada = kpd.getKey();
-   if (tecla_pressionada != NO_KEY){
-       putSenha(tecla_pressionada);
-      tone(melodyPin, 2000);
-  }
-}
-
-void checarSenha(){
-  if(count == 4){ //definir sua senha aki
-    if(passe == senha){
-      myservoP.write(0);
-      tranca = true;
-      digitalWrite(portaLedRed, LOW);
-      digitalWrite(portaLedGreen, HIGH);
-      delay(1000);
-    }else{
-      myservoP.write(90);
-      tranca = false;
-      digitalWrite(portaLedRed, HIGH);
-      digitalWrite(portaLedGreen, LOW);
-    }
-    passe = "";
-    count = 0;
-  }
-}
-
 void setup (){
   conectar();
   senha = getRequest("/sensor/senha");
-
-  dht.begin();
-  //kpd.begin( makeKeymap(keys) );
-  kpd.begin();
+  
+  //kpd.begin();
   
   myservoP.attach(portaServoP);
   myservoC.attach(portaServoC);
   myservoJ.attach(portaServoJ);
-  
-  pinMode(portaLDRF, OUTPUT);
-  pinMode(portaLDRD, OUTPUT);
-  pinMode(portaPIR, INPUT);
+ 
   pinMode(portaReleL, OUTPUT);
   pinMode(portaReleA, OUTPUT);
   pinMode(portaReleV, OUTPUT);
   pinMode(melodyPin, OUTPUT);
-  pinMode(portaChuva, INPUT);
+  //pinMode(portaChuva, INPUT);
   pinMode(portaLedRed, OUTPUT);
   pinMode(portaLedGreen, OUTPUT);
   pinMode(portaBotaoFC, OUTPUT);
   pinMode(portaBotaoSair, OUTPUT);
   pinMode(portaBotaoA, OUTPUT);
 }
- 
-void loop() { 
-  relogio();
-  lerSensores();
-  inserirDigito();
-  checarSenha();
-  if(getRequest("/sensor/celular") == "desligado"){
-    atualizarApi();
-  } else{
-    atualizarEstados();    
-  }
 
-  if(ambientea){
+//https://cityos.io/tutorial/1958/Use-multiplexer-with-Arduino multiplexador 1
+//https://www.arduinoecia.com.br/2017/03/como-usar-pcf8574-expansor-de-portas-i2c.html teclado matricial
+//http://www.nadielcomercio.com.br/blog/2015/09/01/ci-pcf8574-expansor-de-portas-io-8-bits-i2c-para-arduino/ multiplexador 2
+//http://www.esp8266learning.com/wemos-mini-pcf8574.php 
+ 
+void loop() {
+  relogio();
+  //inserirDigito();
+  //checarSenha();
+  lerSensores();
+
+  if(pausa > 15){
+    if(!ambientea){
+      atualizarApi();
+    } else{
+      atualizarEstados();    
+    }
+    pausa = 0;
+  }
+  
+   pausa++;
+   
+   if(ambientea){
     //pelo celular
     if(luz1){
       digitalWrite(portaReleL, HIGH);
@@ -362,13 +372,6 @@ void loop() {
       myservoJ.write(0);
     }else{
       myservoJ.write(180);
-    }
-
-    if(tranca){
-      myservoP.write(0);
-      delay(1000);
-    }else{
-      myservoP.write(90);
     }
   }else{
     //pelo ambiente
@@ -420,8 +423,19 @@ void loop() {
       luz2 = false;
      }
   }
-
+  
   //parte do dane-se ambiente
+  if(getRequest("/sensor/e_tranca")){
+    myservoP.write(0);
+    digitalWrite(portaLedRed, LOW);
+    digitalWrite(portaLedGreen, HIGH);
+    delay(5000);
+  }else{
+    myservoP.write(180);
+    digitalWrite(portaLedRed, HIGH);
+    digitalWrite(portaLedGreen, LOW);
+  }
+    
   if(estBSair){
     myservoP.write(0);
     tranca = true;
@@ -447,13 +461,68 @@ void loop() {
   }
 }
 
+void porta0(){
+  pinMode(D13, 0);
+  pinMode(D14, 0);
+  pinMode(D15, 0);
+  delay(50);
+  pinMode(A0, INPUT);
+  LDRF = analogRead(A0);
+}
+
+void porta1(){
+  pinMode(D13, 0);
+  pinMode(D14, 0);
+  pinMode(D15, 1);
+  delay(50);
+  pinMode(A0, INPUT);
+  LDRD = analogRead(A0);
+}
+
+void porta2(){
+  pinMode(D13, 0);
+  pinMode(D14, 1);
+  pinMode(D15, 0);
+  delay(50);
+  DHT dht(A0, DHTTYPE);
+  dht.begin();
+  temperatura = dht.readTemperature();
+}
+
+void porta3(){
+  pinMode(D13, 0);
+  pinMode(D14, 1);
+  pinMode(D15, 1);
+  delay(50);
+  pinMode(A0, INPUT);
+  pressao = analogRead(A0);
+}
+
+void porta4(){
+  pinMode(D13, 1);
+  pinMode(D14, 0);
+  pinMode(D15, 0);
+  delay(50);
+  pinMode(A0, INPUT);
+  presenca = digitalRead(A0);
+}
+
+void porta5(){
+  pinMode(D13, 1);
+  pinMode(D14, 0);
+  pinMode(D15, 1);
+  delay(50);
+  pinMode(A0, INPUT);
+  chuva = digitalRead(A0);
+}
+
 void lerSensores(){
-   LDRF = analogRead(portaLDRF);
-   LDRD = analogRead(portaLDRD);
-   presenca = digitalRead(portaPIR);
-   temperatura = dht.readTemperature();
-   pressao = analogRead(portaPiezo);
-   chuva = digitalRead(portaChuva);
+   porta0();
+   porta1();
+   porta4();
+   porta2();
+   porta3();
+   porta5();
    estBFC = digitalRead(portaBotaoFC);
    estBSair = digitalRead(portaBotaoSair);
    estBA = digitalRead(portaBotaoA);
