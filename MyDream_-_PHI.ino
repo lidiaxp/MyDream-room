@@ -216,7 +216,7 @@ String voltaEstados(bool result){
 
 void atualizarEstados(){
   ambientea = estados(getRequest("/sensor/celular"));
-  tranca = estados(getRequest("/sensor/e_tranca"));
+  //tranca = estados(getRequest("/sensor/e_tranca"));
   ventilador = estados(getRequest("/sensor/e_vent"));
   luz1 = estados(getRequest("/sensor/e_lamp1"));
   luz2 = estados(getRequest("/sensor/e_lamp2"));
@@ -300,7 +300,7 @@ void relogio(){
 
 void setup (){
   conectar();
-  senha = getRequest("/sensor/senha");
+  //senha = getRequest("/sensor/senha");
   
   //kpd.begin();
   
