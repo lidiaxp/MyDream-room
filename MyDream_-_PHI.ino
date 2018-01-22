@@ -15,22 +15,22 @@
 
 //Digital
 //#define portaPIR D0 
-#define portaReleL D0
-#define portaReleA D12
-#define portaReleV D2
+#define portaReleL D6
+#define portaReleA D7
+#define portaReleV D0
 #define melodyPin D3
 //#define portaChuva D5
-#define portaLedRed D4
-#define portaLedGreen D5
-#define portaServoP D6
-#define portaServoC D7
-#define portaServoJ D8
-#define portaBotaoFC D9
-#define portaBotaoSair D10
-#define portaBotaoA D11
+//#define portaLedRed D4
+//#define portaLedGreen D5
+#define portaServoP D2
+#define portaServoC D4
+#define portaServoJ D5
+//#define portaBotaoFC D6
+//#define portaBotaoSair D7
+#define portaBotaoA D8
 
-#define FILAS 4
-#define COLUMNAS 4
+#define FILAS 2
+#define COLUMNAS 2
 
 //Valores
 int LDRF = 0;
@@ -54,13 +54,13 @@ bool ventilador = false;
 bool ambientea = false;
 
 //Internet
-const char* ssid = "SuaRede";
-const char* password = "SuaSenha";
+const char* ssid = "LDI";
+const char* password = "somenteldimaiusculo";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
 bool online = false;
-//int count;
+int count;
 String senha;
-//String passe;
+String passe;
 int hora, minuto, horaAcordar, minutoAcordar;
 
 unsigned int localPort = 2390; 
@@ -95,19 +95,18 @@ byte grau[8] ={ B00001100,
                 B00000000, 
                 B00000000,}; 
 
-/*char teclas[FILAS][COLUMNAS] = {
-{'1','2','3','A'},
-{'4','5','6','B'},
-{'7','8','9','C'},
-{'*','0','#','D'}
+char teclas[FILAS][COLUMNAS] = {
+{'1','2'},
+{'4','5'}
 };
 
-byte PinsFilas[FILAS] = {0,1,2,3}; 
-byte PinsColumnas[COLUMNAS] = {4,5,6,7};
+byte PinsFilas[FILAS] = {D9,D10}; 
+byte PinsColumnas[COLUMNAS] = {D11,D12};
 
-int i2caddress = 0x20;
+Keypad keypad = Keypad(makeKeymap(teclas), PinsFilas, PinsColumnas, FILAS, COLUMNAS);
 
-Keypad_I2C kpd = Keypad_I2C( makeKeymap(teclas), PinsFilas, PinsColumnas, FILAS, COLUMNAS, i2caddress );*/
+//int i2caddress = 0x20;
+//Keypad_I2C kpd = Keypad_I2C( makeKeymap(teclas), PinsFilas, PinsColumnas, FILAS, COLUMNAS, i2caddress );
 
 void conectar(){
   Serial.begin(115200);
@@ -216,7 +215,7 @@ String voltaEstados(bool result){
 
 void atualizarEstados(){
   ambientea = estados(getRequest("/sensor/celular"));
-  //tranca = estados(getRequest("/sensor/e_tranca"));
+  tranca = estados(getRequest("/sensor/e_tranca"));
   ventilador = estados(getRequest("/sensor/e_vent"));
   luz1 = estados(getRequest("/sensor/e_lamp1"));
   luz2 = estados(getRequest("/sensor/e_lamp2"));
@@ -240,7 +239,7 @@ void atualizarApi(){
   putRequest("/sensor/alarme", voltaEstados(alarme));
 }
 
-/*void putSenha(int n){
+void putSenha(int n){
   if(count < 4){
      passe += n;
   }
@@ -249,10 +248,10 @@ void atualizarApi(){
 }
 
 void inserirDigito(){
-  char tecla_pressionada = kpd.getKey();
+  char tecla_pressionada = keypad.getKey();
    if (tecla_pressionada != NO_KEY){
        putSenha(tecla_pressionada);
-      tone(melodyPin, 2000);
+       tone(melodyPin, 2000);
   }
 }
 
@@ -260,18 +259,16 @@ void checarSenha(){
   if(count == 4){ //definir sua senha aki
     if(passe == senha){
       myservoP.write(0);
-      digitalWrite(portaLedRed, LOW);
-      digitalWrite(portaLedGreen, HIGH);
+      tone(melodyPin, 1000);
       delay(1000);
     }else{
       myservoP.write(90);
-      digitalWrite(portaLedRed, HIGH);
-      digitalWrite(portaLedGreen, LOW);
+      tone(melodyPin, 3000);
     }
     passe = "";
     count = 0;
   }
-}*/
+}
 
 void relogio(){
   WiFi.hostByName(ntpServerName, timeServerIP); 
@@ -300,23 +297,27 @@ void relogio(){
 
 void setup (){
   conectar();
-  //senha = getRequest("/sensor/senha");
+  senha = getRequest("/sensor/senha");
   
   //kpd.begin();
   
   myservoP.attach(portaServoP);
   myservoC.attach(portaServoC);
   myservoJ.attach(portaServoJ);
+
+  pinMode(D13, OUTPUT);
+  pinMode(D14, OUTPUT);
+  pinMode(D15, OUTPUT);
  
   pinMode(portaReleL, OUTPUT);
   pinMode(portaReleA, OUTPUT);
   pinMode(portaReleV, OUTPUT);
   pinMode(melodyPin, OUTPUT);
   //pinMode(portaChuva, INPUT);
-  pinMode(portaLedRed, OUTPUT);
-  pinMode(portaLedGreen, OUTPUT);
-  pinMode(portaBotaoFC, OUTPUT);
-  pinMode(portaBotaoSair, OUTPUT);
+  //pinMode(portaLedRed, OUTPUT);
+  //pinMode(portaLedGreen, OUTPUT);
+  //pinMode(portaBotaoFC, OUTPUT);
+  //pinMode(portaBotaoSair, OUTPUT);
   pinMode(portaBotaoA, OUTPUT);
 }
 
@@ -326,9 +327,10 @@ void setup (){
 //http://www.esp8266learning.com/wemos-mini-pcf8574.php 
  
 void loop() {
+  //Serial.println("No loop");
   relogio();
-  //inserirDigito();
-  //checarSenha();
+  inserirDigito();
+  checarSenha();
   lerSensores();
 
   if(pausa > 15){
@@ -361,11 +363,17 @@ void loop() {
     }else{
       digitalWrite(portaReleV, LOW);
     }
+    
+    if(tranca){
+      myservoP.write(0);
+    }else{
+      myservoP.write(180);
+    }
 
     if(cortina){
       myservoC.write(0);
     }else{
-      myservoC.write(180);
+      myservoC.write(90);
     }
 
     if(janela){
@@ -387,7 +395,7 @@ void loop() {
       }
 
       if(pressao > thershold){
-        myservoC.write(180);
+        myservoC.write(90);
         cortina = false;
         digitalWrite(portaReleL, LOW);
         luz1 = false;
@@ -409,7 +417,7 @@ void loop() {
         ventilador = false;
       }
     }else{
-      myservoC.write(180);
+      myservoC.write(90);
       myservoP.write(90);
       myservoJ.write(180);
       digitalWrite(portaReleV, LOW);
@@ -425,17 +433,6 @@ void loop() {
   }
   
   //parte do dane-se ambiente
-  if(getRequest("/sensor/e_tranca")){
-    myservoP.write(0);
-    digitalWrite(portaLedRed, LOW);
-    digitalWrite(portaLedGreen, HIGH);
-    delay(5000);
-  }else{
-    myservoP.write(180);
-    digitalWrite(portaLedRed, HIGH);
-    digitalWrite(portaLedGreen, LOW);
-  }
-    
   if(estBSair){
     myservoP.write(0);
     tranca = true;
@@ -450,7 +447,7 @@ void loop() {
     digitalWrite(portaReleA, HIGH);
     luz2 = true;
   }else{
-    digitalWrite(portaReleA, HIGH);
+    digitalWrite(portaReleA, LOW);
     luz2 = false;
   }
   
@@ -462,27 +459,27 @@ void loop() {
 }
 
 void porta0(){
-  pinMode(D13, 0);
-  pinMode(D14, 0);
-  pinMode(D15, 0);
+  digitalWrite(D13, LOW);//A
+  digitalWrite(D14, LOW);//B
+  digitalWrite(D15, LOW);//C
   delay(50);
   pinMode(A0, INPUT);
   LDRF = analogRead(A0);
 }
 
 void porta1(){
-  pinMode(D13, 0);
-  pinMode(D14, 0);
-  pinMode(D15, 1);
+  digitalWrite(D13, HIGH);//A
+  digitalWrite(D14, LOW);//B
+  digitalWrite(D15, LOW);//C
   delay(50);
   pinMode(A0, INPUT);
   LDRD = analogRead(A0);
 }
 
 void porta2(){
-  pinMode(D13, 0);
-  pinMode(D14, 1);
-  pinMode(D15, 0);
+  digitalWrite(D13, LOW);
+  digitalWrite(D14, HIGH);
+  digitalWrite(D15, LOW);
   delay(50);
   DHT dht(A0, DHTTYPE);
   dht.begin();
@@ -490,30 +487,48 @@ void porta2(){
 }
 
 void porta3(){
-  pinMode(D13, 0);
-  pinMode(D14, 1);
-  pinMode(D15, 1);
+  digitalWrite(D13, HIGH);
+  digitalWrite(D14, HIGH);
+  digitalWrite(D15, LOW);
   delay(50);
   pinMode(A0, INPUT);
   pressao = analogRead(A0);
 }
 
 void porta4(){
-  pinMode(D13, 1);
-  pinMode(D14, 0);
-  pinMode(D15, 0);
+  digitalWrite(D13, LOW);
+  digitalWrite(D14, LOW);
+  digitalWrite(D15, HIGH);
   delay(50);
   pinMode(A0, INPUT);
   presenca = digitalRead(A0);
 }
 
 void porta5(){
-  pinMode(D13, 1);
-  pinMode(D14, 0);
-  pinMode(D15, 1);
+  digitalWrite(D13, HIGH);
+  digitalWrite(D14, LOW);
+  digitalWrite(D15, HIGH);
   delay(50);
   pinMode(A0, INPUT);
-  chuva = digitalRead(A0);
+  chuva = analogRead(A0);
+}
+
+void porta6(){
+  digitalWrite(D13, LOW);
+  digitalWrite(D14, HIGH);
+  digitalWrite(D15, HIGH);
+  delay(50);
+  pinMode(A0, INPUT);
+  estBFC = analogRead(A0); 
+}
+
+void porta7(){
+  digitalWrite(D13, HIGH);
+  digitalWrite(D14, HIGH);
+  digitalWrite(D15, HIGH);
+  delay(50);
+  pinMode(A0, INPUT);
+  estBSair = analogRead(A0);
 }
 
 void lerSensores(){
@@ -523,8 +538,8 @@ void lerSensores(){
    porta2();
    porta3();
    porta5();
-   estBFC = digitalRead(portaBotaoFC);
-   estBSair = digitalRead(portaBotaoSair);
+   porta6();
+   porta7();
    estBA = digitalRead(portaBotaoA);
 }
 
@@ -770,3 +785,10 @@ void buzz(int targetPin, long frequency, long length) {
     delayMicroseconds(delayValue); 
   }
 }
+
+/*
+Para melhorar o projeto:
+Usar Thread
+Entender o endereço do PCF8574
+Usar JSON no arduino
+*/
