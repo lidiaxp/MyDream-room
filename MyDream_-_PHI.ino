@@ -29,8 +29,8 @@
 //#define portaBotaoSair D7
 #define portaBotaoA D8
 
-#define FILAS 2
-#define COLUMNAS 2
+const byte ROWS = 2; 
+const byte COLS = 2;
 
 //Valores
 int LDRF = 0;
@@ -54,8 +54,8 @@ bool ventilador = false;
 bool ambientea = false;
 
 //Internet
-const char* ssid = "LDI";
-const char* password = "somenteldimaiusculo";
+const char* ssid = "LCT";
+const char* password = "propagacao";
 const char* host = "mydream-ufpa-phi.herokuapp.com";
 bool online = false;
 int count;
@@ -83,7 +83,7 @@ Servo myservoJ;
 //Outros Valores
 
 
-int thershold = 20;
+int thershold = 150;
 int pausa = 0;
 
 byte grau[8] ={ B00001100, 
@@ -95,15 +95,15 @@ byte grau[8] ={ B00001100,
                 B00000000, 
                 B00000000,}; 
 
-char teclas[FILAS][COLUMNAS] = {
-{'1','2'},
-{'4','5'}
+char keys[ROWS][COLS] = {
+  {'1','2'},
+  {'4','5'}
 };
 
-byte PinsFilas[FILAS] = {D9,D10}; 
-byte PinsColumnas[COLUMNAS] = {D11,D12};
+byte rowPins[ROWS] = {6, 7}; 
+byte colPins[COLS] = {8, 9}; 
 
-Keypad keypad = Keypad(makeKeymap(teclas), PinsFilas, PinsColumnas, FILAS, COLUMNAS);
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 //int i2caddress = 0x20;
 //Keypad_I2C kpd = Keypad_I2C( makeKeymap(teclas), PinsFilas, PinsColumnas, FILAS, COLUMNAS, i2caddress );
@@ -167,7 +167,7 @@ String getRequest(String quem){
   while (client.connected()) {
     
     String line = client.readStringUntil('\n');
-    Serial.println(line);
+    //Serial.println(line);
     if (line == "\r") {
       break;
     }
@@ -367,7 +367,7 @@ void loop() {
     if(tranca){
       myservoP.write(0);
     }else{
-      myservoP.write(180);
+      myservoP.write(90);
     }
 
     if(cortina){
@@ -383,7 +383,7 @@ void loop() {
     }
   }else{
     //pelo ambiente
-    if(presenca){
+    //if(presenca){
       if((LDRF - 100) > LDRD){
         myservoC.write(0);
         cortina = true;
@@ -416,7 +416,7 @@ void loop() {
         digitalWrite(portaReleV, LOW);
         ventilador = false;
       }
-    }else{
+    /*}else{
       myservoC.write(90);
       myservoP.write(90);
       myservoJ.write(180);
@@ -430,7 +430,7 @@ void loop() {
       luz1 = false;
       luz2 = false;
      }
-  }
+  }*/
   
   //parte do dane-se ambiente
   if(estBSair){
@@ -439,7 +439,7 @@ void loop() {
   }
 
   if(estBFC){
-    myservoP.write(180);
+    myservoP.write(90);
     tranca = false;
   }
   
