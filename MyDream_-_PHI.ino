@@ -29,7 +29,7 @@
 //#define portaBotaoSair D7
 #define portaBotaoA D8
 
-const byte ROWS = 2; 
+const byte ROWS = 3; 
 const byte COLS = 2;
 
 //Valores
@@ -97,11 +97,12 @@ byte grau[8] ={ B00001100,
 
 char keys[ROWS][COLS] = {
   {'1','2'},
-  {'4','5'}
+  {'4','5'},
+  {'7','8'}
 };
 
-byte rowPins[ROWS] = {6, 7}; 
-byte colPins[COLS] = {8, 9}; 
+byte rowPins[ROWS] = {D8, D9, D10}; 
+byte colPins[COLS] = {D11, D12}; 
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
